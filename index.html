@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liga Portugal | Oficjalny Serwer Roleplay</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+ <!-- Vue 3 z Cloudflare CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.5.13/vue.global.prod.min.js"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0c120f; }
+    ::-webkit-scrollbar-thumb { background: #164e33; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #10b981; }
+    [v-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-[#090d0b] text-gray-100 min-h-screen flex flex-col selection:bg-emerald-500 selection:text-black">
+
+<div id="app" v-cloak class="flex-1 flex flex-col">
+
+  <!-- ==================== TOP NAVIGATION ==================== -->
+  <header class="bg-[#0e1612] border-b border-emerald-950/60 sticky top-0 z-40 backdrop-blur-md bg-opacity-95">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo & Branding -->
+<div class="w-10 h-10 rounded-xl bg-[#121c17] border border-emerald-600/40 p-1.5 flex items-center justify-center shadow-lg">
+  <svg viewBox="0 0 24 24" fill="none" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" stroke="#10b981" stroke-width="2"/>
+    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="#ef4444"/>
+  </svg>
+</div>
+
+
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-black tracking-wider uppercase text-white text-base">Liga Portugal</span>
+              <span class="text-[10px] font-bold tracking-widest uppercase bg-red-950/80 text-red-400 border border-red-800/50 px-1.5 py-0.5 rounded">RP</span>
+            </div>
+            <p class="text-xs text-gray-400">Oficjalna Platforma Rozgrywek (18 Klubów)</p>
+          </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center gap-1">
+          <button 
+            v-for="tab in tabs" 
+            :key="tab.id"
+            @click="currentTab = tab.id"
+            :class="[
+              'px-3.5 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all flex items-center gap-1.5',
+              currentTab === tab.id 
+                ? 'bg-emerald-900/40 text-emerald-300 border border-emerald-600/50 shadow-sm' 
+                : 'text-gray-400 hover:text-gray-200 hover:bg-[#14201a]'
+            ]">
+            <span>{{ tab.icon }}</span>
+            <span>{{ tab.name }}</span>
+          </button>
+        </nav>
+
+        <!-- User Role / Switch Profile Button -->
+        <div class="flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <div class="text-xs font-bold text-gray-200 flex items-center gap-1.5 justify-end">
+              <span :class="roleBadgeClass(user.role)">{{ roleLabel(user.role) }}</span>
+              <span v-if="user.clubId" class="text-emerald-400">| {{ getClub(user.clubId)?.shortName }}</span>
+            </div>
+            <p class="text-[11px] text-gray-500">{{ user.name }}</p>
+          </div>
+
+          <button 
+            @click="showAuthModal = true"
+            class="px-3.5 py-1.5 bg-emerald-700/30 hover:bg-emerald-600/40 border border-emerald-600/40 text-emerald-300 hover:text-white rounded-lg text-xs font-bold tracking-wide transition-all flex items-center gap-2">
+            <span>🔑</span>
+            <span>{{ user.role === 'fan' ? 'Zaloguj rolę' : 'Zmień profil' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Nav Bar -->
+    <div class="md:hidden flex overflow-x-auto border-t border-emerald-950/60 bg-[#0b120e] px-2 py-1.5 gap-1 text-xs">
+      <button 
+        v-for="tab in tabs" 
+        :key="tab.id"
+        @click="currentTab = tab.id"
+        :class="[
+          'px-2.5 py-1.5 rounded text-xs font-medium whitespace-nowrap',
+          currentTab === tab.id ? 'bg-emerald-900/50 text-emerald-300 font-bold' : 'text-gray-400'
+        ]">
+        {{ tab.icon }} {{ tab.name }}
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- BANNER INFORMACYJNY -->
+    <div v-if="leagueAnnouncement" class="mb-6 p-4 rounded-xl bg-gradient-to-r from-emerald-950/60 via-[#10241b] to-red-950/40 border border-emerald-800/40 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">📢</span>
+        <div>
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">Komunikat Zarządu Ligi</span>
+          <p class="text-sm font-medium text-gray-200">{{ leagueAnnouncement }}</p>
+        </div>
+      </div>
+      <button v-if="user.role === 'admin'" @click="editAnnouncement" class="text-xs text-emerald-400 hover:underline">Edytuj</button>
+    </div>
+
+    <!-- 1. TABELA & WYNIKI (TAB: TABLE) -->
+    <section v-if="currentTab === 'table'" class="space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-emerald-950/80">
+        <div>
+          <h1 class="text-2xl font-black text-white flex items-center gap-2">
+            <span>🏆</span> Tabela Liga Portugal (18 Klubów)
+          </h1>
+          <p class="text-xs text-gray-400">Sezon oficjalny • Automatyczne przeliczanie punktów i bilansu bramek</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-950/60 border border-emerald-800/40 text-emerald-400">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 1-2: Liga Mistrzów
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-950/60 border border-red-800/40 text-red-400">
+            <span class="w-2 h-2 rounded-full bg-red-400"></span> 16-18: Strefa spadkowa
+          </span>
+        </div>
+      </div>
+
+      <!-- Tabela ligowa -->
+      <div class="overflow-x-auto bg-[#0d1511] border border-emerald-950/80 rounded-2xl shadow-xl">
+        <table class="w-full text-left text-xs sm:text-sm">
+          <thead class="bg-[#121c17] text-gray-400 font-bold uppercase tracking-wider text-[11px] border-b border-emerald-950/80">
+            <tr>
+              <th class="py-3 px-3 text-center w-10">Poz</th>
+              <th class="py-3 px-3">Klub</th>
+              <th class="py-3 px-2 text-center">M</th>
+              <th class="py-3 px-2 text-center hidden sm:table-cell">W</th>
+              <th class="py-3 px-2 text-center hidden sm:table-cell">R</th>
+              <th class="py-3 px-2 text-center hidden sm:table-cell">P</th>
+              <th class="py-3 px-2 text-center">Bramki</th>
+              <th class="py-3 px-2 text-center font-bold">+/-</th>
+              <th class="py-3 px-3 text-center font-extrabold text-emerald-400">Pkt</th>
+              <th class="py-3 px-3 text-center hidden md:table-cell">Trener</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-emerald-950/40 text-gray-300">
+            <tr 
+              v-for="(team, index) in sortedTable" 
+              :key="team.id"
+              :class="[
+                'hover:bg-emerald-950/20 transition-colors',
+                user.clubId === team.id ? 'bg-emerald-900/10 font-semibold' : ''
+              ]">
+              <!-- Miejsce -->
+              <td class="py-3 px-3 text-center font-black">
+                <span :class="[
+                  'inline-flex items-center justify-center w-6 h-6 rounded-full text-xs',
+                  index < 2 ? 'bg-emerald-950 text-emerald-400 border border-emerald-600/50' : 
+                  index >= sortedTable.length - 3 ? 'bg-red-950 text-red-400 border border-red-700/50' : 'text-gray-400'
+                ]">
+                  {{ index + 1 }}
+                </span>
+              </td>
+
+              <!-- Nazwa i Herb -->
+              <td class="py-3 px-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black shadow shrink-0" :style="{ backgroundColor: team.primaryColor, color: team.textColor || '#fff' }">
+                    {{ team.badgeText }}
+                  </div>
+                  <div>
+                    <span class="font-bold text-white hover:text-emerald-300 cursor-pointer" @click="viewClubDetails(team.id)">
+                      {{ team.name }}
+                    </span>
+                    <span v-if="user.clubId === team.id" class="ml-2 text-[10px] text-emerald-400 font-semibold bg-emerald-950/70 border border-emerald-800/40 px-1 rounded">TWÓJ KLUB</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Statystyki -->
+              <td class="py-3 px-2 text-center font-semibold text-gray-200">{{ team.played }}</td>
+              <td class="py-3 px-2 text-center text-emerald-400 hidden sm:table-cell">{{ team.won }}</td>
+              <td class="py-3 px-2 text-center text-gray-400 hidden sm:table-cell">{{ team.drawn }}</td>
+              <td class="py-3 px-2 text-center text-red-400 hidden sm:table-cell">{{ team.lost }}</td>
+              <td class="py-3 px-2 text-center text-gray-300 font-mono">{{ team.goalsFor }}:{{ team.goalsAgainst }}</td>
+              <td class="py-3 px-2 text-center font-mono font-bold" :class="team.goalsFor - team.goalsAgainst >= 0 ? 'text-emerald-400' : 'text-red-400'">
+                {{ (team.goalsFor - team.goalsAgainst > 0 ? '+' : '') + (team.goalsFor - team.goalsAgainst) }}
+              </td>
+              <td class="py-3 px-3 text-center font-black text-emerald-300 text-base font-mono">{{ team.points }}</td>
+              
+              <!-- Trener -->
+              <td class="py-3 px-3 text-center text-gray-400 text-xs hidden md:table-cell">
+                {{ team.coachName || 'Do objęcia' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Ostatnie Rozegrane Mecze z Ocenami -->
+      <div class="mt-10">
+        <h2 class="text-xl font-black text-white mb-4 flex items-center gap-2">
+          <span>📋</span> Ostatnie Wyniki & Oceny Pomeczowe
+        </h2>
+
+        <div v-if="playedMatches.length === 0" class="text-center py-8 bg-[#0d1511] border border-emerald-950/60 rounded-xl text-gray-400 text-xs">
+          Brak rozegranych meczów. Admin wprowadza wyniki w Panelu Administratora.
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div 
+            v-for="m in playedMatches" 
+            :key="m.id"
+            class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-4 space-y-3 shadow-lg">
+            
+            <div class="flex items-center justify-between text-[11px] text-gray-400 border-b border-emerald-950/60 pb-2">
+              <span class="font-bold text-emerald-400 uppercase tracking-wider">Kolejka {{ m.round }}</span>
+              <span>{{ m.date || 'Rozegrany' }}</span>
+            </div>
+
+            <!-- Wynik meczu -->
+            <div class="flex items-center justify-between py-2">
+              <div class="flex items-center gap-2 w-5/12 justify-end text-right">
+                <span class="font-bold text-white text-sm sm:text-base">{{ getClub(m.homeTeamId)?.name }}</span>
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" :style="{ backgroundColor: getClub(m.homeTeamId)?.primaryColor, color: getClub(m.homeTeamId)?.textColor || '#fff' }">
+                  {{ getClub(m.homeTeamId)?.badgeText }}
+                </div>
+              </div>
+
+              <div class="px-3 py-1 bg-[#14231b] border border-emerald-800/60 rounded-xl font-black text-base sm:text-lg font-mono text-emerald-300">
+                {{ m.homeScore }} : {{ m.awayScore }}
+              </div>
+
+              <div class="flex items-center gap-2 w-5/12">
+                <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0" :style="{ backgroundColor: getClub(m.awayTeamId)?.primaryColor, color: getClub(m.awayTeamId)?.textColor || '#fff' }">
+                  {{ getClub(m.awayTeamId)?.badgeText }}
+                </div>
+                <span class="font-bold text-white text-sm sm:text-base">{{ getClub(m.awayTeamId)?.name }}</span>
+              </div>
+            </div>
+
+            <div v-if="m.events" class="text-xs text-gray-300 bg-[#090d0b] p-2.5 rounded-lg border border-emerald-950/60">
+              <span class="font-bold text-emerald-400">Wydarzenia:</span> {{ m.events }}
+            </div>
+
+            <div v-if="m.ratings && m.ratings.length > 0" class="space-y-1.5 pt-1">
+              <div class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+                <span>⭐</span> Oficjalne Oceny Zawodników
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div 
+                  v-for="(r, idx) in m.ratings" 
+                  :key="idx"
+                  class="bg-[#121c17] p-2 rounded-lg border border-emerald-950/60 flex items-center justify-between">
+                  <div>
+                    <span class="font-bold text-gray-200">{{ r.playerName }}</span>
+                    <span class="text-[10px] text-gray-400 block">{{ r.comment }}</span>
+                  </div>
+                  <span :class="[
+                    'font-mono font-black text-xs px-2 py-0.5 rounded',
+                    r.score >= 8 ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' :
+                    r.score >= 6 ? 'bg-yellow-950/60 text-yellow-300 border border-yellow-800/40' :
+                    'bg-red-950 text-red-300 border border-red-800'
+                  ]">
+                    {{ r.score }}/10
+                  </span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 2. TERMINARZ (TAB: FIXTURES) -->
+    <section v-if="currentTab === 'fixtures'" class="space-y-6">
+      <div class="flex items-center justify-between pb-2 border-b border-emerald-950/80">
+        <div>
+          <h1 class="text-2xl font-black text-white flex items-center gap-2">
+            <span>📅</span> Terminarz Rozgrywek
+          </h1>
+          <p class="text-xs text-gray-400">Zaplanowane spotkania i mecze do rozegrania</p>
+        </div>
+        <div v-if="user.role === 'admin'">
+          <button @click="currentTab = 'admin'" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-black font-bold text-xs rounded-lg transition-all">
+            + Dodaj Mecz w Panelu Admina
+          </button>
+        </div>
+      </div>
+
+      <div v-if="fixtures.length === 0" class="text-center py-12 bg-[#0d1511] border border-emerald-950/60 rounded-2xl text-gray-400 text-xs">
+        Brak zaplanowanych spotkań. Administrator może dodać mecze w Panelu Admina.
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div 
+          v-for="f in fixtures" 
+          :key="f.id"
+          class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-[11px] text-gray-400 border-b border-emerald-950/60 pb-2 mb-3">
+              <span class="font-extrabold text-emerald-400 uppercase">Kolejka {{ f.round }}</span>
+              <span>{{ f.date || 'Termin do ustalenia' }}</span>
+            </div>
+
+            <div class="space-y-2">
+              <div class="flex items-center justify-between bg-[#121c17] p-2.5 rounded-xl border border-emerald-950/40">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" :style="{ backgroundColor: getClub(f.homeTeamId)?.primaryColor, color: getClub(f.homeTeamId)?.textColor || '#fff' }">
+                    {{ getClub(f.homeTeamId)?.badgeText }}
+                  </div>
+                  <span class="font-bold text-white text-xs sm:text-sm">{{ getClub(f.homeTeamId)?.name }}</span>
+                </div>
+                <span v-if="f.status === 'completed'" class="font-mono font-bold text-emerald-400 text-sm">{{ f.homeScore }}</span>
+              </div>
+
+              <div class="flex items-center justify-between bg-[#121c17] p-2.5 rounded-xl border border-emerald-950/40">
+                <div class="flex items-center gap-2">
+                  <div class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" :style="{ backgroundColor: getClub(f.awayTeamId)?.primaryColor, color: getClub(f.awayTeamId)?.textColor || '#fff' }">
+                    {{ getClub(f.awayTeamId)?.badgeText }}
+                  </div>
+                  <span class="font-bold text-white text-xs sm:text-sm">{{ getClub(f.awayTeamId)?.name }}</span>
+                </div>
+                <span v-if="f.status === 'completed'" class="font-mono font-bold text-emerald-400 text-sm">{{ f.awayScore }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-2 border-t border-emerald-950/40 flex items-center justify-between text-[11px]">
+            <span :class="f.status === 'completed' ? 'text-gray-500' : 'text-emerald-400 font-bold'">
+              {{ f.status === 'completed' ? 'Zakończony' : 'Oczekuje na rozegranie' }}
+            </span>
+            <button 
+              v-if="user.role === 'admin' && f.status !== 'completed'"
+              @click="openResolveMatchModal(f)"
+              class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-black font-bold rounded text-[11px]">
+              Rozlicz wynik
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. STREFA MEDIALNA & NEWSY (TAB: MEDIA) -->
+    <section v-if="currentTab === 'media'" class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-emerald-950/80">
+        <div>
+          <h1 class="text-2xl font-black text-white flex items-center gap-2">
+            <span>📰</span> Strefa Medialna & Prasa
+          </h1>
+          <p class="text-xs text-gray-400">Prasa ogólnoligowa, niezależne doniesienia oraz oficjalne kanały klubów</p>
+        </div>
+
+        <div class="flex items-center gap-2 bg-[#121c17] p-1 rounded-xl border border-emerald-950">
+          <button 
+            @click="mediaSubTab = 'press'"
+            :class="['px-3 py-1.5 rounded-lg text-xs font-bold transition-all', mediaSubTab === 'press' ? 'bg-emerald-700 text-black' : 'text-gray-400 hover:text-white']">
+            🗞️ Prasa Ligowa & Newsy
+          </button>
+          <button 
+            @click="mediaSubTab = 'channels'"
+            :class="['px-3 py-1.5 rounded-lg text-xs font-bold transition-all', mediaSubTab === 'channels' ? 'bg-emerald-700 text-black' : 'text-gray-400 hover:text-white']">
+            🎙️ Oficjalne Kanały Klubowe
+          </button>
+        </div>
+      </div>
+
+      <!-- PRASA LIGOWA -->
+      <div v-if="mediaSubTab === 'press'" class="space-y-6">
+        <div v-if="user.role === 'admin'" class="bg-[#0e1612] p-4 rounded-2xl border border-emerald-900/40">
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-emerald-400 mb-2">Publikacja artykułu prasowego (Admin)</h3>
+          <div class="space-y-2">
+            <input v-model="newArticle.title" type="text" placeholder="Tytuł artykułu lub nagłówek..." class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <select v-model="newArticle.source" class="bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-xs text-gray-200">
+                <option value="Gazeta Ligowa">Gazeta Ligowa (Oficjalny Biuletyn)</option>
+                <option value="Niezależne Echo Boiska">Niezależne Echo Boiska</option>
+                <option value="Głos Stadionu">Głos Stadionu</option>
+                <option value="Magazyn Taktyczny">Magazyn Taktyczny</option>
+              </select>
+              <input v-model="newArticle.author" type="text" placeholder="Autor / Redaktor..." class="bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-xs text-white">
+            </div>
+            <textarea v-model="newArticle.content" rows="3" placeholder="Treść artykułu, wywiadu lub doniesień transferowych..." class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"></textarea>
+            <div class="text-right">
+              <button @click="publishArticle" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold text-xs rounded-xl shadow transition-all">
+                Opublikuj Artykuł
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <article 
+            v-for="art in articles" 
+            :key="art.id"
+            class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-5 space-y-3 shadow-lg flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold border border-emerald-800/40">
+                  {{ art.source }}
+                </span>
+                <span class="text-gray-500">{{ art.date }}</span>
+              </div>
+              <h2 class="text-base sm:text-lg font-black text-white hover:text-emerald-300 transition-colors">
+                {{ art.title }}
+              </h2>
+              <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-line">
+                {{ art.content }}
+              </p>
+            </div>
+
+            <div class="pt-3 border-t border-emerald-950/60 flex items-center justify-between text-xs text-gray-400">
+              <span>Autor: <strong class="text-gray-200">{{ art.author }}</strong></span>
+              <button @click="art.likes++" class="flex items-center gap-1.5 hover:text-red-400 transition-colors">
+                <span>❤️</span> <span class="font-mono font-bold">{{ art.likes || 0 }}</span>
+              </button>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- KANAŁY KLUBOWE (1 KANAŁ NA KLUB) -->
+      <div v-if="mediaSubTab === 'channels'" class="space-y-6">
+        <div v-if="user.role === 'coach'" class="bg-[#0e1612] p-4 rounded-2xl border border-emerald-900/60 shadow-lg">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xl">🎙️</span>
+            <div>
+              <h3 class="text-xs font-black uppercase text-emerald-400 tracking-wider">
+                Oficjalny Kanał Prasowy: {{ getClub(user.clubId)?.name }}
+              </h3>
+              <p class="text-[11px] text-gray-400">Jako trener możesz publikować oficjalne konferencje i oświadczenia klubu.</p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <input v-model="newClubPost.title" type="text" placeholder="Tytuł konferencji lub oświadczenia..." class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-xs text-white focus:outline-none">
+            <textarea v-model="newClubPost.content" rows="3" placeholder="Wypowiedź trenera, analiza taktyczna lub reakcja na wynik..." class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"></textarea>
+            <div class="text-right">
+              <button @click="publishClubPost" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold text-xs rounded-xl transition-all">
+                Wydaj Oficjalny Komunikat
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="p-3 rounded-xl bg-[#0e1612] border border-emerald-950/60 text-xs text-gray-400 flex items-center justify-between">
+          <span>Tylko Trener danego klubu ma uprawnienia do publikowania oświadczeń w swoim kanale.</span>
+          <button v-if="user.role !== 'coach'" @click="showAuthModal = true" class="text-emerald-400 font-bold hover:underline">Zaloguj się jako Trener</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div 
+            v-for="post in clubPosts" 
+            :key="post.id"
+            class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-4 space-y-3 shadow-lg">
+            
+            <div class="flex items-center justify-between border-b border-emerald-950/60 pb-2">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" :style="{ backgroundColor: getClub(post.clubId)?.primaryColor, color: getClub(post.clubId)?.textColor || '#fff' }">
+                  {{ getClub(post.clubId)?.badgeText }}
+                </div>
+                <div>
+                  <span class="font-bold text-white text-xs block">{{ getClub(post.clubId)?.name }}</span>
+                  <span class="text-[10px] text-emerald-400">Oficjalny Kanał Klubu</span>
+                </div>
+              </div>
+              <span class="text-[11px] text-gray-500">{{ post.date }}</span>
+            </div>
+
+            <div>
+              <h3 class="font-black text-sm text-gray-100 mb-1">{{ post.title }}</h3>
+              <p class="text-xs text-gray-300 leading-relaxed whitespace-pre-line">{{ post.content }}</p>
+            </div>
+
+            <div class="text-[11px] text-gray-400 pt-2 border-t border-emerald-950/40 flex items-center justify-between">
+              <span>Autor: <strong class="text-emerald-300">{{ post.author }}</strong> (Trener)</span>
+              <button @click="post.likes++" class="hover:text-red-400 transition-colors flex items-center gap-1">
+                <span>👏</span> <span class="font-mono">{{ post.likes || 0 }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 4. PANEL TRENERA (TAB: COACH) -->
+    <section v-if="currentTab === 'coach'" class="space-y-6">
+      <div v-if="user.role !== 'coach'" class="p-8 text-center bg-[#0e1612] border border-emerald-950 rounded-2xl space-y-3">
+        <span class="text-4xl block">🔒</span>
+        <h2 class="text-lg font-bold text-white">Strefa Sztabu Szkoleniowego</h2>
+        <p class="text-xs text-gray-400 max-w-md mx-auto">Musisz być zalogowany kodem dostępu trenera swojego klubu, aby zarządzać taktyką i składem.</p>
+        <button @click="showAuthModal = true" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-bold text-xs rounded-xl">
+          Zaloguj się jako Trener
+        </button>
+      </div>
+
+      <div v-else class="space-y-6">
+        <div class="flex items-center justify-between pb-2 border-b border-emerald-950/80">
+          <div>
+            <h1 class="text-2xl font-black text-white flex items-center gap-2">
+              <span>📋</span> Panel Trenera: {{ getClub(user.clubId)?.name }}
+            </h1>
+            <p class="text-xs text-gray-400">Ustalanie wyjściowej 11-stki, formacji i dyspozycji meczowych</p>
+          </div>
+          <span class="px-3 py-1 bg-emerald-950 border border-emerald-700/60 rounded-lg text-emerald-300 text-xs font-bold">
+            Zalogowany jako Główny Trener
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-5 space-y-4 shadow-xl">
+            <h2 class="text-sm font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+              <span>⚙️</span> Założenia Taktyczne
+            </h2>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <label class="block text-gray-400 mb-1 font-semibold">Formacja</label>
+                <select v-model="currentTactic.formation" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+                  <option value="4-3-3">4-3-3 (Ofensywne skrzydła)</option>
+                  <option value="4-2-3-1">4-2-3-1 (Podwójny rygiel)</option>
+                  <option value="3-5-2">3-5-2 (Wahadła)</option>
+                  <option value="4-4-2">4-4-2 (Klasyczna)</option>
+                  <option value="5-3-2">5-3-2 (Catenaccio)</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-gray-400 mb-1 font-semibold">Styl gry</label>
+                <select v-model="currentTactic.style" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+                  <option value="Ofensywny">Ofensywny / Atak Pozycyjny</option>
+                  <option value="Zrównoważony">Zrównoważony</option>
+                  <option value="Kontratak">Szybki Kontratak</option>
+                  <option value="Gegenpressing">Wysoki Gegenpressing</option>
+                  <option value="Defensywny">Niska Defensywa</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-gray-400 mb-1 font-semibold">Instrukcje Specjalne dla Zespołu</label>
+                <textarea v-model="currentTactic.instructions" rows="4" placeholder="Np. Indywidualne krycie na '10', agresywny doskok w środku pola..." class="w-full bg-[#14231b] border border-emerald-950 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500"></textarea>
+              </div>
+
+              <button @click="saveTactics" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold rounded-xl transition-all">
+                Zapisz Taktykę Meczową
+              </button>
+            </div>
+          </div>
+
+          <div class="lg:col-span-2 bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-5 space-y-4 shadow-xl">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-sm font-extrabold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                  <span>👕</span> Wyjściowa Jedenastka ({{ selectedLineup.length }}/11)
+                </h2>
+                <p class="text-[11px] text-gray-400">Kliknij na zawodnika z kadry, aby dodać go do składu wyjściowego</p>
+              </div>
+              <button @click="selectedLineup = []" class="text-xs text-red-400 hover:underline">Wyczyść skład</button>
+            </div>
+
+            <div class="bg-gradient-to-b from-[#0a1811] to-[#0d2217] border border-emerald-900/60 rounded-xl p-4 min-h-[220px]">
+              <div v-if="selectedLineup.length === 0" class="h-full flex items-center justify-center text-gray-500 text-xs py-8">
+                Skład jest pusty. Wybierz zawodników z listy poniżej lub poproś admina o dodanie kadry Twojego klubu.
+              </div>
+              <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                <div 
+                  v-for="(p, i) in selectedLineup" 
+                  :key="i"
+                  class="bg-[#12231b]/90 border border-emerald-600/40 p-2 rounded-lg flex items-center justify-between text-xs">
+                  <div class="truncate">
+                    <span class="text-[10px] text-emerald-400 font-bold block">{{ p.position }}</span>
+                    <span class="font-bold text-white truncate">{{ p.name }}</span>
+                  </div>
+                  <button @click="removeFromLineup(i)" class="text-red-400 hover:text-red-300 font-bold px-1">✕</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2 pt-2">
+              <h3 class="text-xs font-bold text-gray-300 uppercase">Dostępna Kadra Zespołu</h3>
+              <div v-if="currentClubSquad.length === 0" class="text-xs text-gray-500 py-3 text-center bg-[#090d0b] rounded-xl border border-emerald-950">
+                Brak przypisanych piłkarzy do tego klubu. Administrator może dodać kadrę w Panelu Admina.
+              </div>
+              <div v-else class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1 bg-[#090d0b] rounded-xl border border-emerald-950">
+                <button 
+                  v-for="player in currentClubSquad" 
+                  :key="player.id"
+                  @click="addToLineup(player)"
+                  :disabled="isInLineup(player.name)"
+                  :class="[
+                    'p-2 rounded-lg text-left text-xs border transition-all flex items-center justify-between',
+                    isInLineup(player.name) 
+                      ? 'bg-emerald-950/20 border-emerald-950 text-gray-500 cursor-not-allowed' 
+                      : 'bg-[#121c17] hover:bg-emerald-900/30 border-emerald-950/80 text-gray-200'
+                  ]">
+                  <div class="truncate">
+                    <span class="text-[10px] text-gray-400 block">{{ player.position }}</span>
+                    <span class="font-bold truncate block">{{ player.name }}</span>
+                  </div>
+                  <span class="text-[10px] font-mono text-emerald-400">{{ player.overall }}</span>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="assistantNotes.length > 0" class="p-3 bg-[#121c17] rounded-xl border border-emerald-950 text-xs space-y-1">
+              <span class="font-bold text-emerald-400 flex items-center gap-1">
+                <span>📝</span> Ostatnia Rekomendacja Asystenta Trenera:
+              </span>
+              <p class="text-gray-300">{{ assistantNotes[assistantNotes.length - 1].text }}</p>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. PANEL ASYSTENTA (TAB: ASSISTANT) -->
+    <section v-if="currentTab === 'assistant'" class="space-y-6">
+      <div v-if="user.role !== 'assistant'" class="p-8 text-center bg-[#0e1612] border border-emerald-950 rounded-2xl space-y-3">
+        <span class="text-4xl block">🔒</span>
+        <h2 class="text-lg font-bold text-white">Strefa Asystenta Trenera</h2>
+        <p class="text-xs text-gray-400 max-w-md mx-auto">Zaloguj się hasłem asystenta do swojego klubu, aby przekazywać notatki i raporty.</p>
+        <button @click="showAuthModal = true" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-bold text-xs rounded-xl">
+          Zaloguj się jako Asystent
+        </button>
+      </div>
+
+      <div v-else class="space-y-6">
+        <div class="pb-2 border-b border-emerald-950/80">
+          <h1 class="text-2xl font-black text-white flex items-center gap-2">
+            <span>🧠</span> Panel Asystenta: {{ getClub(user.clubId)?.name }}
+          </h1>
+          <p class="text-xs text-gray-400">Raporty skautingowe i sugestie taktyczne dla pierwszego trenera</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-5 space-y-3 shadow-xl">
+            <h2 class="text-sm font-extrabold uppercase tracking-wider text-emerald-400">Wyślij Notatkę / Raport</h2>
+            <textarea v-model="newAssistantNote" rows="5" placeholder="Np. Sugeruję zagęszczenie środka pola na najbliższy mecz ligowy..." class="w-full bg-[#14231b] border border-emerald-950 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500"></textarea>
+            <button @click="sendAssistantNote" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-bold text-xs rounded-xl transition-all">
+              Przekaż Raport Sztabowi
+            </button>
+          </div>
+
+          <div class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-5 space-y-3 shadow-xl">
+            <h2 class="text-sm font-extrabold uppercase tracking-wider text-emerald-400">Wysłane Notatki</h2>
+            <div v-if="assistantNotes.length === 0" class="text-xs text-gray-500 py-6 text-center">
+              Brak wcześniejszych notatek dla Twojego klubu.
+            </div>
+            <div class="space-y-2 max-h-64 overflow-y-auto">
+              <div 
+                v-for="(n, idx) in assistantNotes" 
+                :key="idx"
+                class="bg-[#121c17] p-3 rounded-xl border border-emerald-950 text-xs space-y-1">
+                <span class="text-[10px] text-gray-500 block">{{ n.date }}</span>
+                <p class="text-gray-200">{{ n.text }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. PANEL ADMINISTRATORA (TAB: ADMIN) -->
+    <section v-if="currentTab === 'admin'" class="space-y-6">
+      <div v-if="user.role !== 'admin'" class="p-8 text-center bg-[#0e1612] border border-emerald-950 rounded-2xl space-y-3">
+        <span class="text-4xl block">🛡️</span>
+        <h2 class="text-lg font-bold text-white">Panel Główny Zarządu Ligi</h2>
+        <p class="text-xs text-gray-400 max-w-md mx-auto">Dostęp wyłącznie dla Administratorów serwera roleplay.</p>
+        <button @click="showAuthModal = true" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-bold text-xs rounded-xl">
+          Podaj Hasło Administratora
+        </button>
+      </div>
+
+      <div v-else class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-2 border-b border-emerald-950/80">
+          <div>
+            <h1 class="text-2xl font-black text-white flex items-center gap-2">
+              <span>🛡️</span> Zarządzanie Ligą (Admin)
+            </h1>
+            <p class="text-xs text-gray-400">Ręczne terminarze, wyniki z ocenami pomeczowymi, transfery i hasła klubów</p>
+          </div>
+          <span class="px-3 py-1 bg-red-950/70 border border-red-700/60 text-red-300 font-bold text-xs rounded-lg">
+            Uprawnienia Główne
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <!-- 1. TERMINARZ -->
+          <div class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-5 space-y-3 shadow-xl">
+            <h2 class="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+              <span>➕</span> 1. Dodaj Mecz do Terminarza
+            </h2>
+            <div class="space-y-2 text-xs">
+              <div>
+                <label class="block text-gray-400 mb-1">Numer Kolejki</label>
+                <input v-model.number="newFixture.round" type="number" min="1" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+              </div>
+              <div>
+                <label class="block text-gray-400 mb-1">Gospodarz</label>
+                <select v-model="newFixture.homeTeamId" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+                  <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-gray-400 mb-1">Gość</label>
+                <select v-model="newFixture.awayTeamId" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+                  <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-gray-400 mb-1">Data / Godzina (opcjonalnie)</label>
+                <input v-model="newFixture.date" type="text" placeholder="Np. Sobota, 20:30" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+              </div>
+              <button @click="createFixture" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold rounded-xl transition-all">
+                Dodaj Mecz do Terminarza
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. TRANSFERY I KADRA -->
+          <div class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-5 space-y-3 shadow-xl">
+            <h2 class="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+              <span>🔄</span> 2. Dodaj Piłkarza do Klubu
+            </h2>
+            <div class="space-y-2 text-xs">
+              <div>
+                <label class="block text-gray-400 mb-1">Imię i Nazwisko</label>
+                <input v-model="newPlayer.name" type="text" placeholder="Np. Piłkarz RP" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-gray-400 mb-1">Pozycja</label>
+                  <select v-model="newPlayer.position" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+                    <option value="BR">Bramkarz (BR)</option>
+                    <option value="OBR">Obrońca (OBR)</option>
+                    <option value="POM">Pomocnik (POM)</option>
+                    <option value="NAP">Napastnik (NAP)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-gray-400 mb-1">Ocena</label>
+                  <input v-model.number="newPlayer.overall" type="number" min="50" max="99" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+                </div>
+              </div>
+              <div>
+                <label class="block text-gray-400 mb-1">Klub</label>
+                <select v-model="newPlayer.clubId" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+                  <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.name }}</option>
+                </select>
+              </div>
+              <button @click="addPlayerToClub" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold rounded-xl transition-all">
+                Zapisz w Kadrze
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. KODY KLUBÓW (DLA ADMINA) -->
+          <div class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-5 space-y-3 shadow-xl">
+            <h2 class="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
+              <span>🔑</span> 3. Kody Trenerów (18 Klubów)
+            </h2>
+            <p class="text-[11px] text-gray-400">Podgląd haseł klubowych (tylko w Twoim panelu):</p>
+            <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1 text-xs">
+              <div 
+                v-for="c in clubs" 
+                :key="c.id"
+                class="bg-[#121c17] p-2 rounded-lg border border-emerald-950 flex items-center justify-between">
+                <span class="font-bold text-gray-200 truncate">{{ c.name }}</span>
+                <span class="font-mono text-emerald-400 font-bold bg-[#090d0b] px-2 py-0.5 rounded border border-emerald-900">
+                  {{ c.coachPin }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="pt-4 border-t border-emerald-950/60 flex items-center justify-between text-xs text-gray-500">
+          <span>Wszystkie dane zapisują się automatycznie w przeglądarce.</span>
+          <button @click="resetToDefaults" class="text-red-400 hover:underline">Zresetuj ligę do danych fabrycznych</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL: LOGOWANIE ==================== -->
+  <div v-if="showAuthModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0e1612] border border-emerald-900/60 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+      
+      <div class="flex items-center justify-between border-b border-emerald-950 pb-3">
+        <div>
+          <h2 class="text-lg font-black text-white">Logowanie do Roli RP</h2>
+          <p class="text-xs text-gray-400">Wybierz swoją funkcję w lidze</p>
+        </div>
+        <button @click="showAuthModal = false" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+      </div>
+
+      <div class="grid grid-cols-4 gap-1.5 bg-[#121c17] p-1.5 rounded-2xl border border-emerald-950 text-xs">
+        <button 
+          v-for="r in ['fan', 'coach', 'assistant', 'admin']" 
+          :key="r"
+          @click="authRole = r"
+          :class="['py-2 rounded-xl font-bold uppercase tracking-wider transition-all', authRole === r ? 'bg-emerald-700 text-black' : 'text-gray-400 hover:text-white']">
+          {{ roleLabel(r) }}
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-gray-400 mb-1 font-semibold">Twój Nick / Imię RP</label>
+          <input v-model="authName" type="text" placeholder="Np. Trener_Porto" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div v-if="authRole === 'coach' || authRole === 'assistant'">
+          <label class="block text-gray-400 mb-1 font-semibold">Wybierz Klub</label>
+          <select v-model="authClubId" class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white">
+            <option v-for="c in clubs" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+
+        <div v-if="authRole !== 'fan'">
+          <label class="block text-gray-400 mb-1 font-semibold">
+            {{ authRole === 'admin' ? 'Hasło Administratora' : 'Hasło / Kod Dostępny do Klubu' }}
+          </label>
+          <input v-model="authPassword" type="password" placeholder="Wpisz hasło..." class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <p v-if="authError" class="text-xs text-red-400 font-semibold">{{ authError }}</p>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-2">
+        <button @click="showAuthModal = false" class="px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Anuluj</button>
+        <button @click="submitAuth" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold text-xs rounded-xl transition-all">
+          Zatwierdź Rolę
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ROZLICZANIE MECZU Z OCENAMI ==================== -->
+  <div v-if="resolvingMatch" class="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#0e1612] border border-emerald-900/60 rounded-3xl max-w-2xl w-full p-6 space-y-4 my-8 shadow-2xl">
+      
+      <div class="flex items-center justify-between border-b border-emerald-950 pb-3">
+        <div>
+          <h2 class="text-lg font-black text-white">Rozliczanie Wyniku & Oceny Meczowe</h2>
+          <p class="text-xs text-gray-400">Kolejka {{ resolvingMatch.round }} • {{ getClub(resolvingMatch.homeTeamId)?.name }} vs {{ getClub(resolvingMatch.awayTeamId)?.name }}</p>
+        </div>
+        <button @click="resolvingMatch = null" class="text-gray-400 hover:text-white font-bold text-lg">✕</button>
+      </div>
+
+      <div class="bg-[#121c17] p-4 rounded-2xl border border-emerald-950 flex items-center justify-around">
+        <div class="text-center">
+          <span class="block font-bold text-white text-sm mb-1">{{ getClub(resolvingMatch.homeTeamId)?.shortName }}</span>
+          <input v-model.number="resolveData.homeScore" type="number" min="0" class="w-16 bg-[#090d0b] border border-emerald-800 text-center text-xl font-black font-mono rounded-xl p-2 text-emerald-300">
+        </div>
+        <span class="text-xl font-black text-gray-500">:</span>
+        <div class="text-center">
+          <span class="block font-bold text-white text-sm mb-1">{{ getClub(resolvingMatch.awayTeamId)?.shortName }}</span>
+          <input v-model.number="resolveData.awayScore" type="number" min="0" class="w-16 bg-[#090d0b] border border-emerald-800 text-center text-xl font-black font-mono rounded-xl p-2 text-emerald-300">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-400 mb-1">Strzelcy, Asysty i Kartki</label>
+        <input v-model="resolveData.events" type="text" placeholder="Np. 12' Gol (1-0), 89' Czerwona kartka..." class="w-full bg-[#14231b] border border-emerald-950 rounded-xl px-3 py-2 text-xs text-white">
+      </div>
+
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-extrabold uppercase text-emerald-400 tracking-wider">Oceny pomeczowe graczy (Skala 1-10)</span>
+          <button @click="addRatingRow" class="text-xs text-emerald-400 font-bold hover:underline">+ Dodaj zawodnika</button>
+        </div>
+
+        <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <div 
+            v-for="(r, idx) in resolveData.ratings" 
+            :key="idx"
+            class="grid grid-cols-12 gap-2 items-center bg-[#121c17] p-2 rounded-xl border border-emerald-950 text-xs">
+            <input v-model="r.playerName" type="text" placeholder="Zawodnik..." class="col-span-5 bg-[#090d0b] border border-emerald-950 rounded-lg px-2 py-1 text-white">
+            <input v-model.number="r.score" type="number" min="1" max="10" step="0.5" placeholder="Nota" class="col-span-2 bg-[#090d0b] border border-emerald-950 rounded-lg px-2 py-1 text-center font-mono font-bold text-emerald-400">
+            <input v-model="r.comment" type="text" placeholder="Komentarz pomeczowy..." class="col-span-4 bg-[#090d0b] border border-emerald-950 rounded-lg px-2 py-1 text-white">
+            <button @click="resolveData.ratings.splice(idx, 1)" class="col-span-1 text-red-400 font-bold text-center">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-t border-emerald-950 flex items-center justify-end gap-2">
+        <button @click="resolvingMatch = null" class="px-4 py-2 text-xs text-gray-400 hover:text-white">Anuluj</button>
+        <button @click="confirmResolveMatch" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold text-xs rounded-xl shadow">
+          Zatwierdź i Przelicz Tabelę
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="border-t border-emerald-950/60 bg-[#0a0f0d] py-6 text-center text-xs text-gray-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span class="text-gray-400 font-bold">Liga Portugal Roleplay Official Platform</span>
+      </div>
+      <p>System ligowy dla 18 zespołów • Zapis w chmurze przeglądarki</p>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ==================== APLIKACJA LOGIKA ==================== -->
+<script>
+const { createApp } = Vue;
+
+// 18 KLUBÓW LIGA PORTUGAL
+const ALL_18_CLUBS = [
+  { id: 'fcp', name: 'FC Porto', shortName: 'FCP', badgeText: 'FCP', primaryColor: '#1d4ed8', textColor: '#ffffff', coachPin: 'porto2026', coachName: '' },
+  { id: 'slb', name: 'Benfica Lizbona', shortName: 'SLB', badgeText: 'SLB', primaryColor: '#dc2626', textColor: '#ffffff', coachPin: 'benfica2026', coachName: '' },
+  { id: 'scp', name: 'Sporting CP', shortName: 'SCP', badgeText: 'SCP', primaryColor: '#059669', textColor: '#ffffff', coachPin: 'sporting2026', coachName: '' },
+  { id: 'scb', name: 'SC Braga', shortName: 'SCB', badgeText: 'SCB', primaryColor: '#b91c1c', textColor: '#ffffff', coachPin: 'braga2026', coachName: '' },
+  { id: 'vsc', name: 'Vitória de Guimarães', shortName: 'VSC', badgeText: 'VSC', primaryColor: '#f8fafc', textColor: '#000000', coachPin: 'vitoria2026', coachName: '' },
+  { id: 'sta', name: 'CD Santa Clara', shortName: 'STA', badgeText: 'STA', primaryColor: '#991b1b', textColor: '#ffffff', coachPin: 'santaclara2026', coachName: '' },
+  { id: 'fca', name: 'FC Arouca', shortName: 'FCA', badgeText: 'FCA', primaryColor: '#eab308', textColor: '#000000', coachPin: 'arouca2026', coachName: '' },
+  { id: 'adv', name: 'Académico de Viseu', shortName: 'ADV', badgeText: 'ADV', primaryColor: '#334155', textColor: '#ffffff', coachPin: 'viseu2026', coachName: '' },
+  { id: 'cfa', name: 'Estrela Amadora', shortName: 'EAM', badgeText: 'EST', primaryColor: '#15803d', textColor: '#ffffff', coachPin: 'estrela2026', coachName: '' },
+  { id: 'gvc', name: 'Gil Vicente', shortName: 'GVC', badgeText: 'GIL', primaryColor: '#b91c1c', textColor: '#ffffff', coachPin: 'gilvicente2026', coachName: '' },
+  { id: 'alv', name: 'FC Alverca', shortName: 'ALV', badgeText: 'ALV', primaryColor: '#1e40af', textColor: '#ffffff', coachPin: 'alverca2026', coachName: '' },
+  { id: 'cac', name: 'Casa Pia', shortName: 'CAC', badgeText: 'CAS', primaryColor: '#171717', textColor: '#ffffff', coachPin: 'casapia2026', coachName: '' },
+  { id: 'gde', name: 'Estoril Praia', shortName: 'EST', badgeText: 'ESP', primaryColor: '#ca8a04', textColor: '#ffffff', coachPin: 'estoril2026', coachName: '' },
+  { id: 'fcf', name: 'FC Famalicão', shortName: 'FCF', badgeText: 'FAM', primaryColor: '#1e3a8a', textColor: '#ffffff', coachPin: 'famalicao2026', coachName: '' },
+  { id: 'csm', name: 'Marítimo', shortName: 'CSM', badgeText: 'MAR', primaryColor: '#166534', textColor: '#ffffff', coachPin: 'maritimo2026', coachName: '' },
+  { id: 'mfc', name: 'Moreirense', shortName: 'MFC', badgeText: 'MOR', primaryColor: '#15803d', textColor: '#ffffff', coachPin: 'moreirense2026', coachName: '' },
+  { id: 'cdn', name: 'CD Nacional', shortName: 'CDN', badgeText: 'NAC', primaryColor: '#0f172a', textColor: '#ffffff', coachPin: 'nacional2026', coachName: '' },
+  { id: 'raf', name: 'Rio Ave', shortName: 'RAF', badgeText: 'RIO', primaryColor: '#047857', textColor: '#ffffff', coachPin: 'rioave2026', coachName: '' }
+];
+
+createApp({
+  data() {
+    return {
+      currentTab: 'table',
+      mediaSubTab: 'press',
+      
+      user: {
+        role: 'fan',
+        name: 'Kibic Piłkarski',
+        clubId: null
+      },
+      showAuthModal: false,
+      authRole: 'fan',
+      authName: '',
+      authClubId: 'fcp',
+      authPassword: '',
+      authError: '',
+      
+      // TWOJE HASŁO ADMINA (ZMIEŃ WEDLE UZNANIA):
+      adminSecret: 'admin123',
+
+      clubs: [],
+      players: [],
+      fixtures: [],
+      articles: [],
+      clubPosts: [],
+      assistantNotes: [],
+      leagueAnnouncement: 'Rozpoczynamy zmagania w pełnej 18-zespołowej Liga Portugal RP! Składy i taktyki zgłaszają trenerzy.',
+
+      currentTactic: {
+        formation: '4-3-3',
+        style: 'Ofensywny',
+        instructions: ''
+      },
+      selectedLineup: [],
+
+      newFixture: { round: 1, homeTeamId: 'fcp', awayTeamId: 'slb', date: 'Sobota 20:30' },
+      newPlayer: { name: '', position: 'NAP', overall: 78, clubId: 'fcp' },
+      newArticle: { title: '', source: 'Gazeta Ligowa', author: '', content: '' },
+      newClubPost: { title: '', content: '' },
+      newAssistantNote: '',
+
+      resolvingMatch: null,
+      resolveData: {
+        homeScore: 0,
+        awayScore: 0,
+        events: '',
+        ratings: []
+      },
+
+      tabs: [
+        { id: 'table', name: 'Tabela & Wyniki', icon: '🏆' },
+        { id: 'fixtures', name: 'Terminarz', icon: '📅' },
+        { id: 'media', name: 'Media & Kanały', icon: '📰' },
+        { id: 'coach', name: 'Panel Trenera', icon: '📋' },
+        { id: 'assistant', name: 'Panel Asystenta', icon: '🧠' },
+        { id: 'admin', name: 'Panel Admina', icon: '🛡️' }
+      ]
+    };
+  },
+
+  computed: {
+    sortedTable() {
+      const stats = {};
+      this.clubs.forEach(c => {
+        stats[c.id] = {
+          ...c,
+          played: 0, won: 0, drawn: 0, lost: 0,
+          goalsFor: 0, goalsAgainst: 0, points: 0
+        };
+      });
+
+      this.fixtures.filter(f => f.status === 'completed').forEach(m => {
+        const home = stats[m.homeTeamId];
+        const away = stats[m.awayTeamId];
+        if (!home || !away) return;
+
+        home.played++;
+        away.played++;
+        home.goalsFor += m.homeScore;
+        home.goalsAgainst += m.awayScore;
+        away.goalsFor += m.awayScore;
+        away.goalsAgainst += m.homeScore;
+
+        if (m.homeScore > m.awayScore) {
+          home.won++;
+          home.points += 3;
+          away.lost++;
+        } else if (m.homeScore < m.awayScore) {
+          away.won++;
+          away.points += 3;
+          home.lost++;
+        } else {
+          home.drawn++;
+          home.points += 1;
+          away.drawn++;
+          away.points += 1;
+        }
+      });
+
+      return Object.values(stats).sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        const diffB = b.goalsFor - b.goalsAgainst;
+        const diffA = a.goalsFor - a.goalsAgainst;
+        if (diffB !== diffA) return diffB - diffA;
+        return b.goalsFor - a.goalsFor;
+      });
+    },
+
+    playedMatches() {
+      return this.fixtures.filter(f => f.status === 'completed').reverse();
+    },
+
+    currentClubSquad() {
+      if (!this.user.clubId) return [];
+      return this.players.filter(p => p.clubId === this.user.clubId);
+    }
+  },
+
+  mounted() {
+    this.loadState();
+  },
+
+  methods: {
+    getClub(id) {
+      return this.clubs.find(c => c.id === id) || { name: 'Nieznany', shortName: '???' };
+    },
+
+    roleLabel(role) {
+      const map = { fan: 'Kibic', coach: 'Trener', assistant: 'Asystent', admin: 'Admin' };
+      return map[role] || role;
+    },
+
+    roleBadgeClass(role) {
+      const map = {
+        admin: 'bg-red-950 text-red-400 border border-red-800 px-2 py-0.5 rounded text-[10px] uppercase font-bold',
+        coach: 'bg-emerald-950 text-emerald-300 border border-emerald-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold',
+        assistant: 'bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded text-[10px] uppercase font-bold',
+        fan: 'bg-gray-800 text-gray-300 px-2 py-0.5 rounded text-[10px] uppercase font-bold'
+      };
+      return map[role] || '';
+    },
+
+    submitAuth() {
+      this.authError = '';
+      if (this.authRole === 'admin') {
+        if (this.authPassword !== this.adminSecret) {
+          this.authError = 'Nieprawidłowe hasło administratora!';
+          return;
+        }
+        this.user = { role: 'admin', name: this.authName || 'Zarząd Ligi', clubId: null };
+      } else if (this.authRole === 'coach' || this.authRole === 'assistant') {
+        const club = this.clubs.find(c => c.id === this.authClubId);
+        if (!club || this.authPassword !== club.coachPin) {
+          this.authError = 'Nieprawidłowy kod klubu! Sprawdź hasło z administratorem.';
+          return;
+        }
+        if (this.authRole === 'coach') {
+          club.coachName = this.authName || 'Trener ' + club.shortName;
+        }
+        this.user = {
+          role: this.authRole,
+          name: this.authName || (this.authRole === 'coach' ? 'Trener ' + club.shortName : 'Asystent ' + club.shortName),
+          clubId: this.authClubId
+        };
+      } else {
+        this.user = { role: 'fan', name: this.authName || 'Kibic Piłkarski', clubId: null };
+      }
+
+      this.showAuthModal = false;
+      this.saveState();
+    },
+
+    addToLineup(player) {
+      if (this.selectedLineup.length >= 11) {
+        alert('Możesz wystawić maksymalnie 11 zawodników w pierwszym składzie!');
+        return;
+      }
+      this.selectedLineup.push(player);
+    },
+    removeFromLineup(index) {
+      this.selectedLineup.splice(index, 1);
+    },
+    isInLineup(playerName) {
+      return this.selectedLineup.some(p => p.name === playerName);
+    },
+    saveTactics() {
+      alert('Założenia taktyczne i skład zostały zapisane w bazie klubu!');
+      this.saveState();
+    },
+
+    sendAssistantNote() {
+      if (!this.newAssistantNote.trim()) return;
+      this.assistantNotes.push({
+        clubId: this.user.clubId,
+        text: this.newAssistantNote,
+        date: new Date().toLocaleDateString('pl-PL') + ' ' + new Date().toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+      });
+      this.newAssistantNote = '';
+      this.saveState();
+      alert('Notatka została przekazana pierwszemu trenerowi!');
+    },
+
+    publishArticle() {
+      if (!this.newArticle.title || !this.newArticle.content) {
+        alert('Podaj tytuł i treść artykułu!');
+        return;
+      }
+      this.articles.unshift({
+        id: 'art_' + Date.now(),
+        title: this.newArticle.title,
+        source: this.newArticle.source,
+        author: this.newArticle.author || 'Redakcja',
+        content: this.newArticle.content,
+        date: 'Przed chwilą',
+        likes: 0
+      });
+      this.newArticle = { title: '', source: 'Gazeta Ligowa', author: '', content: '' };
+      this.saveState();
+    },
+
+    publishClubPost() {
+      if (!this.newClubPost.title || !this.newClubPost.content) {
+        alert('Podaj tytuł i treść oświadczenia!');
+        return;
+      }
+      this.clubPosts.unshift({
+        id: 'cpost_' + Date.now(),
+        clubId: this.user.clubId,
+        title: this.newClubPost.title,
+        content: this.newClubPost.content,
+        author: this.user.name,
+        date: 'Przed chwilą',
+        likes: 0
+      });
+      this.newClubPost = { title: '', content: '' };
+      this.saveState();
+    },
+
+    createFixture() {
+      if (this.newFixture.homeTeamId === this.newFixture.awayTeamId) {
+        alert('Gospodarz i gość muszą być różnymi zespołami!');
+        return;
+      }
+      this.fixtures.push({
+        id: 'fix_' + Date.now(),
+        round: this.newFixture.round,
+        homeTeamId: this.newFixture.homeTeamId,
+        awayTeamId: this.newFixture.awayTeamId,
+        date: this.newFixture.date,
+        status: 'scheduled',
+        homeScore: 0,
+        awayScore: 0,
+        events: '',
+        ratings: []
+      });
+      this.saveState();
+      alert('Mecz dodany do terminarza!');
+    },
+
+    openResolveMatchModal(fixture) {
+      this.resolvingMatch = fixture;
+      this.resolveData = {
+        homeScore: fixture.homeScore || 0,
+        awayScore: fixture.awayScore || 0,
+        events: fixture.events || '',
+        ratings: fixture.ratings && fixture.ratings.length ? JSON.parse(JSON.stringify(fixture.ratings)) : [
+          { playerName: '', score: 7.5, comment: 'Dobry występ' }
+        ]
+      };
+    },
+
+    addRatingRow() {
+      this.resolveData.ratings.push({ playerName: '', score: 7.0, comment: '' });
+    },
+
+    confirmResolveMatch() {
+      if (!this.resolvingMatch) return;
+      this.resolvingMatch.homeScore = this.resolveData.homeScore;
+      this.resolvingMatch.awayScore = this.resolveData.awayScore;
+      this.resolvingMatch.events = this.resolveData.events;
+      this.resolvingMatch.ratings = this.resolveData.ratings.filter(r => r.playerName.trim() !== '');
+      this.resolvingMatch.status = 'completed';
+      
+      this.resolvingMatch = null;
+      this.saveState();
+      alert('Mecz został rozliczony, a tabela zaktualizowana!');
+    },
+
+    addPlayerToClub() {
+      if (!this.newPlayer.name) return;
+      this.players.push({
+        id: 'p_' + Date.now(),
+        name: this.newPlayer.name,
+        position: this.newPlayer.position,
+        overall: this.newPlayer.overall,
+        clubId: this.newPlayer.clubId
+      });
+      this.newPlayer.name = '';
+      this.saveState();
+      alert('Zawodnik zapisany!');
+    },
+
+    editAnnouncement() {
+      const text = prompt('Wpisz nowy komunikat zarządu ligi:', this.leagueAnnouncement);
+      if (text !== null) {
+        this.leagueAnnouncement = text;
+        this.saveState();
+      }
+    },
+
+    viewClubDetails(clubId) {
+      const c = this.getClub(clubId);
+      const squad = this.players.filter(p => p.clubId === clubId).map(p => `${p.position} ${p.name} (${p.overall})`).join('\n');
+      alert(`Klub: ${c.name}\nTrener: ${c.coachName || 'Brak'}\n\nKadra:\n${squad || 'Brak wprowadzonych zawodników'}`);
+    },
+
+    saveState() {
+      const state = {
+        clubs: this.clubs,
+        players: this.players,
+        fixtures: this.fixtures,
+        articles: this.articles,
+        clubPosts: this.clubPosts,
+        assistantNotes: this.assistantNotes,
+        leagueAnnouncement: this.leagueAnnouncement
+      };
+      localStorage.setItem('lp_rp_state_v2', JSON.stringify(state));
+    },
+
+    loadState() {
+      const saved = localStorage.getItem('lp_rp_state_v2');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          this.clubs = parsed.clubs || ALL_18_CLUBS;
+          this.players = parsed.players || [];
+          this.fixtures = parsed.fixtures || [];
+          this.articles = parsed.articles || [];
+          this.clubPosts = parsed.clubPosts || [];
+          this.assistantNotes = parsed.assistantNotes || [];
+          this.leagueAnnouncement = parsed.leagueAnnouncement || '';
+          return;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      this.resetToDefaults();
+    },
+
+    resetToDefaults() {
+      this.clubs = JSON.parse(JSON.stringify(ALL_18_CLUBS));
+      this.players = [];
+      this.fixtures = [
+        {
+          id: 'f1', round: 1, homeTeamId: 'fcp', awayTeamId: 'slb', date: 'Sobota 20:30',
+          status: 'scheduled', homeScore: 0, awayScore: 0, events: '', ratings: []
+        },
+        {
+          id: 'f2', round: 1, homeTeamId: 'scp', awayTeamId: 'scb', date: 'Niedziela 18:00',
+          status: 'scheduled', homeScore: 0, awayScore: 0, events: '', ratings: []
+        }
+      ];
+      this.articles = [
+        {
+          id: 'art1',
+          title: 'Startuje 18-zespołowa Liga Portugal! Pełny zestaw klubów na nowy sezon',
+          source: 'Gazeta Ligowa',
+          author: 'Zarząd Rozgrywek',
+          content: 'Oficjalnie potwierdzono 18 drużyn w najwyższej klasie rozgrywkowej. Trenerzy mogą już logować się do swoich paneli i ustawiać wyjściowe jedenastki.',
+          date: 'Dzisiaj',
+          likes: 5
+        }
+      ];
+      this.clubPosts = [];
+      this.saveState();
+    }
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
