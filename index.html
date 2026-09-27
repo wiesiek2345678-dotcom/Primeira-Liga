@@ -1299,6 +1299,15 @@ createApp({
         }
       }
       this.resetToDefaults();
+  },
+
+  // *** DODANA METODA USUWANIA MECZU ***
+  deleteMatch(matchId) {
+    if (confirm('Czy na pewno chcesz usunąć ten mecz?')) {
+      this.fixtures = this.fixtures.filter(match => match.id !== matchId);
+      this.saveState();
+    }
+  }
     },
 
     resetToDefaults() {
