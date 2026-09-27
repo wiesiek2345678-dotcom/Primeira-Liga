@@ -283,74 +283,84 @@
 
     </section>
 
-    <!-- 2. TERMINARZ (TAB: FIXTURES) -->
-    <section v-if="currentTab === 'fixtures'" class="space-y-6">
-      <div class="flex items-center justify-between pb-2 border-b border-emerald-950/80">
-        <div>
-          <h1 class="text-2xl font-black text-white flex items-center gap-2">
-            <span>📅</span> Terminarz Rozgrywek
-          </h1>
-          <p class="text-xs text-gray-400">Zaplanowane spotkania i mecze do rozegrania</p>
+      <!-- 2. TERMINARZ (TAB: FIXTURES) -->
+<section v-if="currentTab === 'fixtures'" class="space-y-6">
+  <div class="flex items-center justify-between pb-2 border-b border-emerald-950/80">
+    <div>
+      <h1 class="text-2xl font-black text-white flex items-center gap-2">
+        <span>📅</span> Terminarz Rozgrywek
+      </h1>
+      <p class="text-xs text-gray-400">Zaplanowane spotkania i mecze do rozegrania</p>
+    </div>
+    <div v-if="user.role === 'admin'">
+      <button @click="currentTab = 'admin'" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-black font-bold text-xs rounded-lg transition-all">
+        + Dodaj Mecz w Panelu Admina
+      </button>
+    </div>
+  </div>
+
+  <div v-if="fixtures.length === 0" class="text-center py-12 bg-[#0d1511] border border-emerald-950/60 rounded-2xl text-gray-400 text-xs">
+    Brak zaplanowanych spotkań. Administrator może dodać mecze w Panelu Admina.
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div 
+      v-for="f in fixtures" 
+      :key="f.id"
+      class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between text-[11px] text-gray-400 border-b border-emerald-950/60 pb-2 mb-3">
+          <span class="font-extrabold text-emerald-400 uppercase">Kolejka {{ f.round }}</span>
+          <span>{{ f.date || 'Termin do ustalenia' }}</span>
         </div>
-        <div v-if="user.role === 'admin'">
-          <button @click="currentTab = 'admin'" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-black font-bold text-xs rounded-lg transition-all">
-            + Dodaj Mecz w Panelu Admina
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between bg-[#121c17] p-2.5 rounded-xl border border-emerald-950/40">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" :style="{ backgroundColor: getClub(f.homeTeamId)?.primaryColor, color: getClub(f.homeTeamId)?.textColor || '#fff' }">
+                {{ getClub(f.homeTeamId)?.badgeText }}
+              </div>
+              <span class="font-bold text-white text-xs sm:text-sm">{{ getClub(f.homeTeamId)?.name }}</span>
+            </div>
+            <span v-if="f.status === 'completed'" class="font-mono font-bold text-emerald-400 text-sm">{{ f.homeScore }}</span>
+          </div>
+
+          <div class="flex items-center justify-between bg-[#121c17] p-2.5 rounded-xl border border-emerald-950/40">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" :style="{ backgroundColor: getClub(f.awayTeamId)?.primaryColor, color: getClub(f.awayTeamId)?.textColor || '#fff' }">
+                {{ getClub(f.awayTeamId)?.badgeText }}
+              </div>
+              <span class="font-bold text-white text-xs sm:text-sm">{{ getClub(f.awayTeamId)?.name }}</span>
+            </div>
+            <span v-if="f.status === 'completed'" class="font-mono font-bold text-emerald-400 text-sm">{{ f.awayScore }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-2 border-t border-emerald-950/40 flex items-center justify-between text-[11px]">
+        <span :class="f.status === 'completed' ? 'text-gray-500' : 'text-emerald-400 font-bold'">
+          {{ f.status === 'completed' ? 'Zakończony' : 'Oczekuje na rozegranie' }}
+        </span>
+
+        <div class="flex gap-2">
+          <button 
+            v-if="user.role === 'admin' && f.status !== 'completed'"
+            @click="openResolveMatchModal(f)"
+            class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-black font-bold rounded text-[11px]">
+            Rozlicz wynik
+          </button>
+
+          <button
+            v-if="user.role === 'admin' && f.status !== 'completed'"
+            @click="deleteMatch(f.id)"
+            class="px-2.5 py-1 bg-red-600 hover:bg-red-500 text-black font-bold rounded text-[11px]">
+            Usuń mecz
           </button>
         </div>
       </div>
-
-      <div v-if="fixtures.length === 0" class="text-center py-12 bg-[#0d1511] border border-emerald-950/60 rounded-2xl text-gray-400 text-xs">
-        Brak zaplanowanych spotkań. Administrator może dodać mecze w Panelu Admina.
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div 
-          v-for="f in fixtures" 
-          :key="f.id"
-          class="bg-[#0e1612] border border-emerald-950/80 rounded-2xl p-4 shadow-lg flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between text-[11px] text-gray-400 border-b border-emerald-950/60 pb-2 mb-3">
-              <span class="font-extrabold text-emerald-400 uppercase">Kolejka {{ f.round }}</span>
-              <span>{{ f.date || 'Termin do ustalenia' }}</span>
-            </div>
-
-            <div class="space-y-2">
-              <div class="flex items-center justify-between bg-[#121c17] p-2.5 rounded-xl border border-emerald-950/40">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" :style="{ backgroundColor: getClub(f.homeTeamId)?.primaryColor, color: getClub(f.homeTeamId)?.textColor || '#fff' }">
-                    {{ getClub(f.homeTeamId)?.badgeText }}
-                  </div>
-                  <span class="font-bold text-white text-xs sm:text-sm">{{ getClub(f.homeTeamId)?.name }}</span>
-                </div>
-                <span v-if="f.status === 'completed'" class="font-mono font-bold text-emerald-400 text-sm">{{ f.homeScore }}</span>
-              </div>
-
-              <div class="flex items-center justify-between bg-[#121c17] p-2.5 rounded-xl border border-emerald-950/40">
-                <div class="flex items-center gap-2">
-                  <div class="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold" :style="{ backgroundColor: getClub(f.awayTeamId)?.primaryColor, color: getClub(f.awayTeamId)?.textColor || '#fff' }">
-                    {{ getClub(f.awayTeamId)?.badgeText }}
-                  </div>
-                  <span class="font-bold text-white text-xs sm:text-sm">{{ getClub(f.awayTeamId)?.name }}</span>
-                </div>
-                <span v-if="f.status === 'completed'" class="font-mono font-bold text-emerald-400 text-sm">{{ f.awayScore }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 pt-2 border-t border-emerald-950/40 flex items-center justify-between text-[11px]">
-            <span :class="f.status === 'completed' ? 'text-gray-500' : 'text-emerald-400 font-bold'">
-              {{ f.status === 'completed' ? 'Zakończony' : 'Oczekuje na rozegranie' }}
-            </span>
-            <button 
-              v-if="user.role === 'admin' && f.status !== 'completed'"
-              @click="openResolveMatchModal(f)"
-              class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-black font-bold rounded text-[11px]">
-              Rozlicz wynik
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
+  </div>
+</section>
 
     <!-- 3. STREFA MEDIALNA & NEWSY (TAB: MEDIA) -->
     <section v-if="currentTab === 'media'" class="space-y-6">
